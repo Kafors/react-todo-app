@@ -1,11 +1,18 @@
 import TodoItem from "./TodoItem"
 
-function TodoList({ todos }) {
+function TodoList({ todos, deleteTodo }) {
+
   return (
     <ul className="todo-list">
+
       {todos.map(todo => (
-        <TodoItem key={todo.id} text={todo.text} />
+        <TodoItem
+          key={todo.id}
+          todo={todo}
+          deleteTodo={deleteTodo}
+        />
       ))}
+
     </ul>
   )
 }
