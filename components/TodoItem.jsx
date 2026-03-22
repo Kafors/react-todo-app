@@ -1,14 +1,36 @@
-function TodoItem({ todo, deleteTodo }) {
+import { useState } from "react"
+
+function TodoItem({ todo, deleteTodo, editTodo }) {
+
+  const [isEditing, setIsEditing] = useState(false)
+  const [text, setText] = useState(todo.text)
 
   return (
     <li className="todo-item">
 
-      {todo.text}
+      {isEditing ? (
+        <>
+          <input
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+          />
+          <button onClick={() => {
+            editTodo(todo.id, text)
+            setIsEditing(false)
+          }}>
+            Зберегти
+          </button>
+        </>
+      ) : (
+        <>
+          {todo.text}
+          <button onClick={() => setIsEditing(true)}>
+            Редагувати
+          </button>
+        </>
+      )}
 
-      <button
-        className="delete-btn"
-        onClick={() => deleteTodo(todo.id)}
-      >
+      <button onClick={() => deleteTodo(todo.id)}>
         Видалити
       </button>
 
