@@ -1,51 +1,75 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import TodoList from "./components/TodoList"
 
 function App() {
 
-  const [todos, setTodos] = useState([
-    { id: 1, text: "Вивчити React" },
-    { id: 2, text: "Зробити практичну" },
-    { id: 3, text: "Завантажити код на GitHub" }
-  ])
-
+  const [todos, setTodos] = useState([])
   const [newTodo, setNewTodo] = useState("")
 
-  const addTodo = () => {
-    if(newTodo.trim() === "") return
+  const API = "http://localhost:3000/todos"
 
-    const newTask = {
-      id: Date.now(),
-      text: newTodo
-    }
+  useEffect(() => {
+    fetch(API)
+      .then(res => res.json())
+      .then(data => setTodos(data))
+  }, [])
 
-    setTodos([...todos, newTask])
+  const addTodo = async () => {
+    if (!newTodo.trim()) return
+
+    const res = await fetch(API, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ title: newTodo })
+    })
+
+    const data = await res.json()
+    setTodos([...todos, data])
     setNewTodo("")
   }
 
-  const deleteTodo = (id) => {
-    setTodos(todos.filter(todo => todo.id !== id))
+  const deleteTodo = async (id) => {
+    await fetch(`${API}/${id}`, {
+      method: "DELETE"
+    })
+
+    setTodos(todos.filter(t => t.id !== id))
+  }
+
+  const editTodo = async (id, newText) => {
+    const res = await fetch(`${API}/${id}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ title: newText })
+    })
+
+    const updated = await res.json()
+
+    setTodos(todos.map(t => t.id === id ? updated : t))
   }
 
   return (
     <div className="app">
 
-      <h1>Список задач</h1>
+      <h1>Todo API App</h1>
 
-      <div className="input-block">
-        <input
-          type="text"
-          placeholder="Нова задача..."
-          value={newTodo}
-          onChange={(e) => setNewTodo(e.target.value)}
-        />
+      <input
+        value={newTodo}
+        onChange={(e) => setNewTodo(e.target.value)}
+        placeholder="Нова задача..."
+      />
 
-        <button onClick={addTodo}>
-          Додати
-        </button>
-      </div>
+      <button onClick={addTodo}>Додати</button>
 
-      <TodoList todos={todos} deleteTodo={deleteTodo}/>
+      <TodoList
+        todos={todos}
+        deleteTodo={deleteTodo}
+        editTodo={editTodo}
+      />
 
     </div>
   )
